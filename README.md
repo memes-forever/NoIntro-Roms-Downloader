@@ -52,7 +52,7 @@ python3 app.pyw
 
 ## Compile exe
 ```
-pyinstaller --onefile -n NoIntro.Roms.Downloader app.pyw
+pyinstaller -D -F --add-data app.ico:. --add-data resources.rcc:. -n NoIntro.Roms.Downloader -w -i ./app.ico app.pyw
 ```
 
 ## Feedback
