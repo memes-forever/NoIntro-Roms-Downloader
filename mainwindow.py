@@ -1,3 +1,5 @@
+import time
+
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
@@ -155,20 +157,25 @@ class MainWindow(QMainWindow, Ui):
     self.gb_downloads.setChecked(True)
     self.download_pane.show()
     total_count = self.download_queue.getTotalCount()
-    self.download_pane.pb_progress.setMaximum(total_count)
-    self.download_pane.pb_progress.setValue(0)
+
     for platform in self.download_queue.queue_dict:
       for i in range(len(self.download_queue.queue_dict[platform])):
-        rom_name = self.platforms.getRomName(platform, self.download_queue.queue_dict[platform][0])
         rom_index = self.download_queue.queue_dict[platform][0]
-        self.download_pane.l_job.setText(f"[{platform}] {rom_name}")
         self.download_pane.l_progress.setText(f"{i}/{total_count}")
         self.repaint()
-        RomDownload(self.settings, self.platforms, platform, rom_index)
-        if self.settings.get('unzip'): Unzip(self.settings, f"{rom_name}.{self.platforms.getRom(platform, rom_name)['format']}")
+        self.downloader = RomDownload(self.settings, self.platforms, platform, rom_index)
+
+        self.downloader.setTotalProgress.connect(self.download_pane.pb_progress.setMaximum)
+        self.downloader.setCurrentProgress.connect(self.download_pane.pb_progress.setValue)
+        self.downloader.setCurrentSpeed.connect(self.download_pane.l_speed.setText)
+        self.downloader.setCurrentJob.connect(self.download_pane.l_job.setText)
+        # self.downloader.succeeded.connect(self.on_finished)
+        # self.downloader.finished.connect(self.on_finished)
+        self.downloader.start()
+
         self.download_queue.remove(platform, rom_index)
-        self.download_pane.pb_progress.setValue(i+1)
         self.repaint()
+
     self.download_pane.l_job.setText("N/A")
     self.download_pane.l_progress.setText(f"{i+1}/{total_count}")
 

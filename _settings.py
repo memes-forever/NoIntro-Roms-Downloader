@@ -11,7 +11,7 @@ class SettingsHelper():
   full_path = SETTINGS_FILE
   _settings = {
     "cache_expiration": 30,
-    "check_updates": True,
+    "check_updates": False,
     "download_path": os.getcwd(),
     "unzip": True,
   }

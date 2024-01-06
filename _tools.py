@@ -16,30 +16,30 @@ class CacheGenerator():
     finished = pyqtSignal(str)
 
 
-    def __init__(self, platform: list, output_cache_json: dict):
+    def __init__(self, platform: dict, output_cache_json: dict):
       super().__init__(None)
       self.platform = platform
       self.output_cache_json = output_cache_json
 
 
     def run(self):
-      if len(self.platform) == 3: # SINGLE PART
-        self.id_name = self.platform[0]
-        self.format = self.platform[1]
-        self.parts = 1
-        self.url = f"https://archive.org/details/{self.platform[2]}&output=json"
+      self.id_name = self.platform['name']
+      self.format = self.platform['format']
+      self.sub_dir = self.platform['sub_dir']
+      self.parts = self.platform.get('parts', 1)
+      self.short_link = self.platform['short_link']
+
+      if 'parts' not in self.platform: # SINGLE PART
+        self.url = f"https://archive.org/details/{self.short_link}&output=json"
         self.output_cache_json[self.id_name] = {}
         DebugHelper.print(DebugType.TYPE_DEBUG, f"Processing <{self.id_name}>", "CACHE")
-        self._ProcessPart(part_id=self.platform[2])
-      elif len(self.platform) == 4: # MULTI PART
-        self.id_name = self.platform[0]
-        self.format = self.platform[1]
-        self.parts = self.platform[2]
+        self._ProcessPart(part_id=self.short_link)
+      elif 'parts' in self.platform: # MULTI PART
         self.output_cache_json[self.id_name] = {}
         
         DebugHelper.print(DebugType.TYPE_DEBUG, f"Processing <{self.id_name}>", "CACHE")
         for i in range(1, self.parts+1):
-          parts_id = str(self.platform[3]).replace('$$', str(i))
+          parts_id = str(self.short_link).replace('$$', str(i))
           self.url = f"https://archive.org/details/{parts_id}&output=json"
           self._ProcessPart(part_id=parts_id, part_number=i)
       self.finished.emit(self.id_name)
@@ -52,16 +52,17 @@ class CacheGenerator():
         content_json = json.loads(content_request)
         part_files = content_json['files']
         for file in part_files:
-          if str(file).find(self.format) != -1:
-            output_file = {
-              "source_id": part_id,
-              "size": int(part_files[file]['size']),
-              "md5": part_files[file]['md5'],
-              "crc32": part_files[file]['crc32'],
-              "sha1": part_files[file]['sha1'],
-              "format": part_files[file]['format'],
-            }
-            self.output_cache_json[self.id_name][file[1:-(len(self.format)+1)]] = output_file
+          # if str(file).find(self.format) != -1:
+          output_file = {
+            "source_id": part_id,
+            "size": int(part_files[file]['size']),
+            "md5": part_files[file]['md5'],
+            "crc32": part_files[file]['crc32'],
+            "sha1": part_files[file]['sha1'],
+            "format": part_files[file]['format'],
+            "sub_dir": self.sub_dir,
+          }
+          self.output_cache_json[self.id_name][file[1:]] = output_file  # -(len(self.format)+1)
       except: pass
 
 
@@ -121,36 +122,97 @@ class CacheGenerator():
 
 
 
-class RomDownload():
+class RomDownload(QThread):
   platform_name = ""
   rom_name = ""
   rom_url = ""
   rom_format = ""
 
+  setTotalProgress = pyqtSignal(int)
+  setCurrentProgress = pyqtSignal(int)
+  setCurrentSpeed = pyqtSignal(str)
+  setCurrentJob = pyqtSignal(str)
+  succeeded = pyqtSignal()
+
   def __init__(self, settings: SettingsHelper, platforms: PlatformsHelper, platform: str, rom_index: int) -> None:
+    super().__init__()
+
     import requests
     from urllib.parse import quote
 
+    self.settings = settings
     self.platform_name = platform
     self.rom_name = platforms.getRomName(platform, rom_index)
     self.rom_format = platforms.getRom(platform, self.rom_name)['format']
-    self.rom_url = f"https://archive.org/download/{platforms.getRom(platform, self.rom_name)['source_id']}/{quote(self.rom_name)}.{self.rom_format}"
+    self.sub_dir = platforms.getRom(platform, self.rom_name)['sub_dir']
+    self.rom_url = f"https://archive.org/download/{platforms.getRom(platform, self.rom_name)['source_id']}/{quote(self.rom_name)}"
     DebugHelper.print(DebugType.TYPE_INFO, f"Downloading [{self.platform_name}] {self.rom_name}", "downloader")
-    with open(os.path.join(settings.get('download_path'), f"{self.rom_name}.{self.rom_format}"), "wb") as of:
-      DebugHelper.print(DebugType.TYPE_DEBUG, f"Downloading from [{self.rom_url}]", "downloader")
-      of.write(requests.get(self.rom_url).content)
+    # with open(os.path.join(settings.get('download_path'), f"{self.rom_name}.{self.rom_format}"), "wb") as of:
+    #   DebugHelper.print(DebugType.TYPE_DEBUG, f"Downloading from [{self.rom_url}]", "downloader")
+    #   of.write(requests.get(self.rom_url).content)
 
+    self._file_path = os.path.join(settings.get('download_path'), self.sub_dir, f"{self.rom_name}")
+    self._link = self.rom_url
+    self._session = requests
+
+  def run(self):
+    import pathlib, time
+    start = time.time()
+    url, filename, session = self._link, self._file_path, self._session
+
+    self.setCurrentJob.emit(self.rom_name)
+
+    response = session.get(url, stream=True, allow_redirects=True)
+    if response.status_code != 200:
+      response.raise_for_status()  # Will only raise for 4xx codes, so...
+      raise RuntimeError(f"Request to {url} returned status code {response.status_code}")
+
+    file_size = int(response.headers.get('Content-Length', 0))
+
+    if os.path.exists(filename):
+      if pathlib.Path(filename).stat().st_size == file_size:
+        DebugHelper.print(DebugType.TYPE_INFO, f'File exist! {filename}')
+        return
+      pr = f'File with error, redownload! '
+    else:
+      pr = ''
+
+    path = pathlib.Path(filename).expanduser().resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    desc = "(Unknown total file size) " if file_size == 0 else ""
+    desc += pr
+
+    self.setTotalProgress.emit(file_size)
+
+    all_size = 0
+    with open(filename, 'wb') as file:
+      for data in response.iter_content(chunk_size=1024):
+        size = file.write(data)
+        all_size += size
+        self.setCurrentProgress.emit(all_size)
+        self.setCurrentSpeed.emit(f"{round((all_size // (time.time() - start))/1000, 3)} Kb/s")
+
+    if self.settings.get('unzip'):
+      self.setCurrentSpeed.emit(f"Unzip ...")
+      Unzip(self._file_path)
+
+    self.setCurrentSpeed.emit(f"Done.")
+    self.succeeded.emit()
 
 
 class Unzip():
-  def __init__(self, settings: SettingsHelper, filename: str) -> None:
-    from py7zr import SevenZipFile
-    path = settings.get('download_path')
-    full_path = os.path.join(path, filename)
+  def __init__(self, full_path: str) -> None:
+    path = os.path.join(*tuple(os.path.split(full_path)[:-1]))
     DebugHelper.print(DebugType.TYPE_INFO, f"Unzipping [{full_path}]...", "unzip")
-    SevenZipFile(full_path).extractall(path)
+    try:
+      from py7zr import SevenZipFile
+      SevenZipFile(full_path).extractall(path)
+    except:
+      import zipfile
+      with zipfile.ZipFile(full_path, 'r') as zip_ref:
+        zip_ref.extractall(path)
     os.remove(full_path)
-    
 
 
 class Tools():
