@@ -1,0 +1,141 @@
+# Nintendo
+- format: 7z
+  name: Nintendo - NES
+  short_link: nointro.nes
+  sub_dir: nes
+- format: 7z
+  name: Nintendo - NES
+  short_link: nointro.nes-headered
+  sub_dir: nes
+- format: 7z
+  name: Nintendo - SNES
+  short_link: nointro.snes
+  sub_dir: snes
+- format: 7z
+  name: Nintendo - 64
+  short_link: nointro.n64
+  sub_dir: n64
+- format: 7z
+  name: Nintendo - 64DD
+  short_link: nointro.n64dd
+  sub_dir: n64dd
+- format: 7z
+  name: Nintendo - Wii
+  short_link: wii_rvz_usa
+  sub_dir: wii
+- format: 7z
+  name: Nintendo - Wii
+  parts: 4
+  short_link: wii_rvz_usa_p$$
+  sub_dir: wii
+- format: 7z
+  name: Nintendo - 3Ds
+  short_link: nintendo-3ds-complete-collection
+  sub_dir: n3ds
+- format: 7z
+  name: Nintendo - 3Ds
+  short_link: nintendo-3ds-complete-collection-pt2
+  sub_dir: n3ds
+# switch
+- format: zip
+  name: Nintendo - Switch
+  short_link: switch-nsp
+  sub_dir: switch
+- format: zip
+  name: Nintendo - Switch
+  short_link: switch_20230311
+  sub_dir: switch
+- format: zip
+  name: Nintendo - Switch
+  short_link: nintendo_switch
+  sub_dir: switch
+- format: zip
+  name: Nintendo - Switch
+  short_link: ROMSSelection-SwitchGames-Emulator
+  sub_dir: switch
+# Sega
+- format: 7z
+  name: Sega - Master System / Mark III
+  short_link: nointro.ms-mkiii
+  sub_dir: mastersystem
+- format: 7z
+  name: Sega - Megadrive / Genesis
+  short_link: nointro.md
+  sub_dir: genesis
+- format: 7z
+  name: Sega - 32X
+  short_link: nointro.32x
+  sub_dir: sega32x
+- format: 7z
+  name: Sega - Game Gear
+  short_link: nointro.gg
+  sub_dir: gamegear
+# PS 1
+- format: zip
+  name: Sony - Playstation
+  short_link: non-redump_sony_playstation
+  sub_dir: psx
+- format: 7z
+  name: Sony - Playstation
+  short_link: redump-sony-playstation-pal
+  sub_dir: psx
+- format: 7z
+  name: Sony - Playstation
+  short_link: redump.psx
+  sub_dir: psx
+- format: 7z
+  name: Sony - Playstation
+  parts: 4
+  short_link: redump.psx.p$$
+  sub_dir: psx
+- format: 7z
+  name: Sony - Playstation
+  short_link: rr-sony-playstation
+  sub_dir: psx
+# PSP
+- format: 7z
+  name: Sony - PSP
+  short_link: rr-sony-playstation-portable
+  sub_dir: psp
+- format: 7z
+  name: Sony - PSP
+  short_link: PSP_DLC
+  sub_dir: psp
+- format: zip
+  name: Sony - PSP
+  short_link: redump.psp
+  sub_dir: psp
+- format: zip
+  name: Sony - PSP
+  short_link: redump.psp.p2
+  sub_dir: psp
+# PS2
+- format: zip
+  name: Sony - Playstation 2
+  parts: 27
+  short_link: PS2_COLLECTION_PART$$
+  sub_dir: ps2
+# PS3
+- format: zip
+  name: Sony - Playstation 3
+  parts: 10
+  short_link: PS3_NOINTRO_USA_$$
+  sub_dir: ps3
+- format: zip
+  name: Sony - Playstation 3
+  parts: 8
+  short_link: PS3_NOINTRO_EUR_$$
+  sub_dir: ps3
+# ps vita
+- format: zip
+  name: Sony - Vita
+  short_link: sony-playstation-vita-usa-full-set-nonpdrm-format
+  sub_dir: psvita
+- format: zip
+  name: Sony - Vita
+  short_link: sony-playstation-vita-usa-full-set-nonpdrm-format-dlc-updates
+  sub_dir: psvita
+- format: zip
+  name: Sony - Vita
+  short_link: nointro-sony-playstation-vita-PSVgameSD
+  sub_dir: psvita
