@@ -51,7 +51,9 @@ python3 app.pyw
 ```
 
 ## Compile exe
-`pyinstaller --onefile -n NoIntro.Roms.Downloader app.pyw`
+```
+pyinstaller --onefile -n NoIntro.Roms.Downloader app.pyw
+```
 
 ## Feedback
 If you found a bug (not listed on the status above), feel free to create an issue [here](https://github.com/silverlays/NoIntro-Roms-Downloader/issues).
