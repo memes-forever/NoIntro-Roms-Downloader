@@ -183,15 +183,15 @@ class RomDownload(QThread):
     desc = "(Unknown total file size) " if file_size == 0 else ""
     desc += pr
 
-    self.setTotalProgress.emit(file_size)
+    self.setTotalProgress.emit(1000)
 
     all_size = 0
     with open(filename, 'wb') as file:
       for data in response.iter_content(chunk_size=1024):
         size = file.write(data)
         all_size += size
-        self.setCurrentProgress.emit(all_size)
-        self.setCurrentSpeed.emit(f"{round((all_size // (time.time() - start))/1000, 3)} Kb/s")
+        self.setCurrentProgress.emit(round(all_size/file_size*1000))
+        self.setCurrentSpeed.emit(f"{round((all_size // (time.time() - start))/1000)} Kb/s")
 
     if self.settings.get('unzip'):
       self.setCurrentSpeed.emit(f"Unzip ...")
